@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>222</title>
+    <title>333</title>
 
     <!-- style for the loader -->
 <!--    <style>-->
@@ -39,13 +39,19 @@
         <img id="ground" src="phot.png">
     </a-assets>
 
+    <a-marker preset="hiro">
     <!-- Basic plane. -->
     <a-plane color="#CCC" height="20" width="20"></a-plane>
 
     <!-- Textured plane parallel to ground. -->
     <a-plane src="#ground" height="100" width="100" rotation="-90 0 0"></a-plane>
-    <a-marker-camera preset='hiro'></a-marker-camera>
+    </a-marker>
+    <a-entity camera></a-entity>-->
 </a-scene>
+
+<!--    <a-marker preset="hiro">-->
+<!--    <a-text value="CCCeee" color="#FFFB8F" align="center" position="0 -1 -1" scale="1 1 1"  geometry="primitive:plane" font-image="phot.png"></a-text>-->
+<!--    </a-marker>-->
 
 
 <!--<a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">-->
