@@ -33,6 +33,16 @@
 <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 <!--<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>-->
 <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+
+<a-scene embedded arjs>
+    <a-assets>
+        <img id="transpImage" src="phot.png">
+    </a-assets>
+    <a-image width="1" height="1" src="#transpImage"></a-image>
+    <a-marker-camera preset='hiro'></a-marker-camera>
+</a-scene>
+
+
 <!--<a-scene embedded arjs>-->
 <!--    <a-marker preset="hiro">-->
 <!--    <a-text value="CCCeee" color="#FFFB8F" align="center" position="0 -1 -1" scale="1 1 1"  geometry="primitive:plane" font-image="phot.png"></a-text>-->
@@ -40,35 +50,35 @@
 <!--    <a-entity camera></a-entity>-->
 <!--    </a-scene>-->
 
-<a-scene
-        vr-mode-ui="enabled: false;"
-        renderer="logarithmicDepthBuffer: true;"
-        embedded
-        arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;">
-    <!-- a-nft is the anchor that defines an Image Tracking entity -->
-    <!-- on 'url' use the path to the Image Descriptors created before. -->
-    <!-- the path should end with the name without the extension e.g. if file is trex.fset' the path should end with trex -->
-    <a-nft
-            type="nft"
-            url="./phot/phot"
-            smooth="true"
-            smoothCount="10"
-            smoothTolerance=".01"
-            smoothThreshold="5">
-        <a-text value="CCCeee" color="#FFFB8F" align="center" position="0 -1 -1" scale="1 1 1"  geometry="primitive:plane"></a-text>
+<!--<a-scene-->
+<!--        vr-mode-ui="enabled: false;"-->
+<!--        renderer="logarithmicDepthBuffer: true;"-->
+<!--        embedded-->
+<!--        arjs="trackingMethod: best; sourceType: webcam;debugUIEnabled: false;">-->
+<!--    &lt;!&ndash; a-nft is the anchor that defines an Image Tracking entity &ndash;&gt;-->
+<!--    &lt;!&ndash; on 'url' use the path to the Image Descriptors created before. &ndash;&gt;-->
+<!--    &lt;!&ndash; the path should end with the name without the extension e.g. if file is trex.fset' the path should end with trex &ndash;&gt;-->
+<!--    <a-nft-->
+<!--            type="nft"-->
+<!--            url="./phot/phot"-->
+<!--            smooth="true"-->
+<!--            smoothCount="10"-->
+<!--            smoothTolerance=".01"-->
+<!--            smoothThreshold="5">-->
+<!--        <a-text value="CCCeee" color="#FFFB8F" align="center" position="0 -1 -1" scale="1 1 1"  geometry="primitive:plane"></a-text>-->
 
-        <!-- as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity -->
-<!--        <a-entity-->
-<!--                gltf-model="https://arjs-cors-proxy.herokuapp.com/https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"-->
-<!--                scale="5 5 5"-->
-<!--                position="100 100 0"-->
-<!--        >-->
-<!--        </a-entity>-->
-    </a-nft>
-    <a-text value="CCCeee" color="#FFFB8F" align="center" position="0 -1 -1" scale="1 1 1"  geometry="primitive:plane"></a-text>
-    <!-- static camera that moves according to the device movemenents -->
-    <a-entity camera></a-entity>
-</a-scene>
+<!--        &lt;!&ndash; as a child of the a-nft entity, you can define the content to show. here's a GLTF model entity &ndash;&gt;-->
+<!--&lt;!&ndash;        <a-entity&ndash;&gt;-->
+<!--&lt;!&ndash;                gltf-model="https://arjs-cors-proxy.herokuapp.com/https://raw.githack.com/AR-js-org/AR.js/master/aframe/examples/image-tracking/nft/trex/scene.gltf"&ndash;&gt;-->
+<!--&lt;!&ndash;                scale="5 5 5"&ndash;&gt;-->
+<!--&lt;!&ndash;                position="100 100 0"&ndash;&gt;-->
+<!--&lt;!&ndash;        >&ndash;&gt;-->
+<!--&lt;!&ndash;        </a-entity>&ndash;&gt;-->
+<!--    </a-nft>-->
+<!--    <a-text value="CCCeee" color="#FFFB8F" align="center" position="0 -1 -1" scale="1 1 1"  geometry="primitive:plane"></a-text>-->
+<!--    &lt;!&ndash; static camera that moves according to the device movemenents &ndash;&gt;-->
+<!--    <a-entity camera></a-entity>-->
+<!--</a-scene>-->
 
 </body>
 </html>
