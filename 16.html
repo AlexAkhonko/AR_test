@@ -33,7 +33,8 @@
 <!--<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>-->
 <script src="aframe.min.js"></script>
 <!--<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>-->
-<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+<!--<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>-->
+<script src="aframe-ar-nft.js"></script>
 
 <a-scene>
     <a-assets>
@@ -44,8 +45,8 @@
     <a-marker type="pattern" url="pattern-hiro.patt">
         <a-plane src="#ground" rotation="-90 0 0"></a-plane>
     </a-marker>
-    <a-marker preset="kanji">
-        <a-plane src="#ground2" height="2" width="2" rotation="-90 0 0"></a-plane>
+    <a-marker preset="letterA">
+        <a-plane src="#ground2" rotation="-90 0 0"></a-plane>
     </a-marker>
     <a-entity camera></a-entity>
 </a-scene>
