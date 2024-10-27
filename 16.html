@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>666</title>
+    <title>111</title>
 
     <!-- style for the loader -->
 <!--    <style>-->
@@ -42,13 +42,14 @@
         <img id="ground2" src="home1.png">
         <img id="ground3" src="car.png">
     </a-assets>
-    <a-marker type="pattern" url="pattern-hiro.patt">
+    <a-marker preset="hiro">
         <a-plane src="#ground" rotation="-90 0 0"></a-plane>
     </a-marker>
 <!--    <a-marker type="pattern" url="pattern-letterA.patt">-->
-    <a-marker type="pattern" url="pattern-kanji.patt">
+    <a-marker preset="kanji">
         <a-plane src="#ground2" rotation="-90 0 0"></a-plane>
-    </a-marker><a-marker type="pattern" url="pattern-arjs.patt">
+    </a-marker>
+    <a-marker preset="letterA">
         <a-plane src="#ground3" rotation="-90 0 0"></a-plane>
     </a-marker>
     <a-entity camera></a-entity>
