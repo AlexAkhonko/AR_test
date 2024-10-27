@@ -5958,7 +5958,11 @@
                         var B = I._arProfile;
                         B.changeMatrixMode(A.data.changeMatrixMode);
                         var C = Object.assign({}, B.defaultMarkerParameters);
-                        "hiro" === A.data.preset ? (C.type = "pattern", C.patternUrl = F.baseURL + "examples/marker-training/examples/pattern-files/pattern-hiro.patt", C.markersAreaEnabled = !1) : "kanji" === A.data.preset ? (C.type = "pattern", C.patternUrl = F.baseURL + "examples/marker-training/examples/pattern-files/pattern-kanji.patt", C.markersAreaEnabled = !1) : "area" === A.data.preset ? (C.type = "barcode", C.barcodeValue = 1001, C.markersAreaEnabled = !0) : "barcode" === A.data.type ? C = {
+                        "hiro" === A.data.preset ? (C.type = "pattern", C.patternUrl = F.baseURL + "examples/marker-training/examples/pattern-files/pattern-hiro.patt", C.markersAreaEnabled = !1) :
+                            "kanji" === A.data.preset ? (C.type = "pattern", C.patternUrl = F.baseURL + "examples/marker-training/examples/pattern-files/pattern-kanji.patt", C.markersAreaEnabled = !1) :
+                            "letterA" === A.data.preset ? (C.type = "pattern", C.patternUrl = F.baseURL + "examples/marker-training/examples/pattern-files/pattern-letterA.patt", C.markersAreaEnabled = !1) :
+                                "area" === A.data.preset ? (C.type = "barcode", C.barcodeValue = 1001, C.markersAreaEnabled = !0) :
+                                    "barcode" === A.data.type ? C = {
                             type: A.data.type,
                             changeMatrixMode: "modelViewMatrix",
                             barcodeValue: A.data.barcodeValue,
