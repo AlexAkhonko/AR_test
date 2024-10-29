@@ -40,17 +40,17 @@
     <a-assets>
         <img id="ground" src="red.jpg">
         <img id="ground2" src="win.jpg">
-        <img id="ground3" src="tuf.jpg">
+<!--        <img id="ground3" src="tuf.jpg">-->
     </a-assets>
     <a-marker preset="hiro">
         <a-plane src="#ground" height="3" width="3"  rotation="-90 0 0"></a-plane>
     </a-marker>
-<!--    <a-marker type="pattern" url="pattern-letterA.patt">-->
     <a-marker preset="kanji">
         <a-plane src="#ground2" height="3" width="3"  rotation="-90 0 0"></a-plane>
     </a-marker>
     <a-marker preset="letterA">
-        <a-plane src="#ground3" height="3" width="3"  rotation="-90 0 0"></a-plane>
+<!--        <a-plane src="#ground3" height="3" width="3"  rotation="-90 0 0"></a-plane>-->
+        <a-plane id="imagePlane" position="0 0 0" rotation="-90 0 0" width="4" height="2.25" material="shader: flat; scale: 2 2 2; src:tuf.jpg"></a-plane>
     </a-marker>
     <a-entity camera></a-entity>
 </a-scene>
