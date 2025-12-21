@@ -27,7 +27,8 @@
       border: 2px solid #0f0;
       box-shadow: 0 0 15px #0f0;
       overflow: hidden;
-      transform: translate(-50%, -110%); /* чуть выше QR */
+      /* ТОЧНО по центру QR, без сдвига */
+      transform: translate(-50%, -50%);
     }
     .image-overlay img {
       width: 100%;
@@ -173,7 +174,7 @@
       const { x, y, width, height } = code.boundingBox;
       const rawValue = code.rawValue;
 
-      // Рамка QR (теперь тоньше, чтобы картинка доминировала)
+      // Рамка QR (остаётся для навигации)
       const box = document.createElement('div');
       box.className = 'box';
       box.style.left = (x * scaleX) + 'px';
@@ -182,25 +183,21 @@
       box.style.height = (height * scaleY) + 'px';
       overlay.appendChild(box);
 
-      // Картинка ТОЧНО такого же размера, поверх QR
+      // Картинка ТОЧНО вместо QR
       const imgElement = getImageForQR(rawValue);
       if (imgElement) {
         const imageDiv = document.createElement('div');
         imageDiv.className = 'image-overlay';
         
-        // Размер точно как у QR
-        const imgWidth = width * scaleX;
-        const imgHeight = height * scaleX; // квадратный, пропорционально QR
+        // РАЗМЕР ТОЧНО как у QR
+        imageDiv.style.width = (width * scaleX) + 'px';
+        imageDiv.style.height = (height * scaleY) + 'px';
         
-        imageDiv.style.width = imgWidth + 'px';
-        imageDiv.style.height = imgHeight + 'px';
-        
-        // Центрируем по QR, но сдвигаем вверх
+        // ПОЗИЦИЯ ТОЧНО центр QR
         const centerX = (x + width / 2) * scaleX;
-        const topY = (y - height * 0.1) * scaleY; // 10% выше QR
-        
+        const centerY = (y + height / 2) * scaleY;
         imageDiv.style.left = centerX + 'px';
-        imageDiv.style.top = topY + 'px';
+        imageDiv.style.top = centerY + 'px';
         
         const img = document.createElement('img');
         img.src = imgElement.src;
