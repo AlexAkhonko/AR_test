@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi QR AR Overlay</title>
+  <title>Multi QR AR Overlay - Images</title>
   <style>
     body { margin: 0; font-family: sans-serif; background: #111; color: #fff; }
     #wrap { position: relative; max-width: 100vw; max-height: 100vh; overflow: hidden; }
@@ -22,25 +22,28 @@
       border: 2px solid #0f0;
       box-shadow: 0 0 10px #0f0;
     }
-    .icon {
+    .image-overlay {
       position: absolute;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.7);
+      width: 80px;
+      height: 80px;
       border: 2px solid #0f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #0f0;
-      font-size: 20px;
-      font-weight: bold;
-      transform: translate(-50%, -50%);
+      box-shadow: 0 0 15px #0f0;
+      border-radius: 8px;
+      overflow: hidden;
+      transform: translate(-50%, -100%);
+      background: #000;
+    }
+    .image-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     #list {
       padding: 8px;
       font-size: 14px;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.8);
+      max-height: 200px;
+      overflow-y: auto;
     }
     #status { font-size: 12px; opacity: 0.7; }
     button {
@@ -57,7 +60,7 @@
 </div>
 
 <div id="list">
-  <div id="status">Ожидание камеры…</div>
+  <div id="status">Загрузка картинок…</div>
   <div id="results"></div>
   <button id="startBtn">Старт</button>
   <button id="stopBtn" disabled>Стоп</button>
@@ -74,23 +77,65 @@
   let stream = null;
   let running = false;
   let detector = null;
+  let images = {};
 
-  // Простые "картинки" для оверлея — буквы. Можно заменить на реальные img по rawValue.
-  const icons = ['A','B','C','D','E','F','G','H','I','J'];
+  // Картинки и их префиксы для сопоставления с QR
+  const imageFiles = {
+    'car': 'car.png',
+    'home': 'home1.png', 
+    'phot': 'phot.png',
+    'red': 'red.jpg',
+    'tuf': 'tuf.jpg',
+    'win': 'win.jpg'
+  };
+
+  // Предзагружаем картинки
+  async function preloadImages() {
+    statusEl.textContent = 'Предзагрузка картинок…';
+    for (const [key, filename] of Object.entries(imageFiles)) {
+      try {
+        const img = new Image();
+        img.src = filename;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => {
+            console.warn(`Не удалось загрузить ${filename}`);
+            resolve(); // продолжаем даже если картинка не загрузилась
+          };
+        });
+        images[key] = img;
+      } catch (e) {
+        console.error(`Ошибка загрузки ${filename}:`, e);
+      }
+    }
+    statusEl.textContent = `${Object.keys(images).length}/6 картинок загружено. Жми Старт.`;
+  }
+
+  // Получаем картинку по содержимому QR (первые 6 символов)
+  function getImageForQR(rawValue) {
+    const prefix = rawValue.substring(0, 6).toLowerCase();
+    for (const [key, img] of Object.entries(images)) {
+      if (prefix.startsWith(key)) {
+        return img;
+      }
+    }
+    return null; // нет подходящей картинки
+  }
 
   async function initDetector() {
     if ('BarcodeDetector' in window) {
       const formats = await BarcodeDetector.getSupportedFormats();
       detector = new BarcodeDetector({ formats: formats.includes('qr_code') ? ['qr_code'] : formats });
-      statusEl.textContent = 'BarcodeDetector доступен, жми Старт.';
     } else {
-      statusEl.textContent = 'BarcodeDetector не поддерживается в этом браузере.';
+      statusEl.textContent = 'BarcodeDetector не поддерживается.';
+      return;
     }
+    await preloadImages();
   }
 
   async function start() {
     if (!detector) {
-      alert('BarcodeDetector недоступен в этом браузере.');
+      alert('BarcodeDetector недоступен.');
       return;
     }
     try {
@@ -101,11 +146,11 @@
       running = true;
       startBtn.disabled = true;
       stopBtn.disabled = false;
-      statusEl.textContent = 'Сканирование… наведи на несколько QR кодов.';
+      statusEl.textContent = 'Сканирование… Создай QR с префиксами: car, home, phot, red, tuf, win';
       requestAnimationFrame(loop);
     } catch (e) {
       console.error(e);
-      statusEl.textContent = 'Ошибка доступа к камере: ' + e.message;
+      statusEl.textContent = 'Ошибка камеры: ' + e.message;
     }
   }
 
@@ -131,10 +176,11 @@
     const scaleX = rect.width / video.videoWidth;
     const scaleY = rect.height / video.videoHeight;
 
-    barcodes.forEach((code, idx) => {
+    barcodes.forEach(code => {
       const { x, y, width, height } = code.boundingBox;
+      const rawValue = code.rawValue;
 
-      // рамка
+      // Рамка QR
       const box = document.createElement('div');
       box.className = 'box';
       box.style.left = (x * scaleX) + 'px';
@@ -143,15 +189,21 @@
       box.style.height = (height * scaleY) + 'px';
       overlay.appendChild(box);
 
-      // "картинка" — иконка над кодом
-      const icon = document.createElement('div');
-      icon.className = 'icon';
-      const centerX = (x + width / 2) * scaleX;
-      const topY = (y - 10) * scaleY; // чуть выше рамки
-      icon.style.left = centerX + 'px';
-      icon.style.top = topY + 'px';
-      icon.textContent = icons[idx % icons.length]; // A,B,C...
-      overlay.appendChild(icon);
+      // Картинка над QR
+      const imgElement = getImageForQR(rawValue);
+      if (imgElement) {
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'image-overlay';
+        const centerX = (x + width / 2) * scaleX;
+        const topY = (y - 90) * scaleY; // выше рамки
+        imageDiv.style.left = centerX + 'px';
+        imageDiv.style.top = topY + 'px';
+        
+        const img = document.createElement('img');
+        img.src = imgElement.src;
+        imageDiv.appendChild(img);
+        overlay.appendChild(imageDiv);
+      }
     });
   }
 
@@ -161,26 +213,27 @@
       return;
     }
 
-    // Создаём временный canvas для детекции (без отображения)
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0);
 
     try {
       const barcodes = await detector.detect(canvas);
       if (barcodes.length > 0) {
         drawOverlay(barcodes);
-        const texts = barcodes.map((b, i) => `${i + 1}. ${b.rawValue}`);
-        resultsEl.textContent = 'Найдено: ' + barcodes.length + '\n' + texts.join('\n');
+        const items = barcodes.map((b, i) => {
+          const imgName = getImageForQR(b.rawValue)?.src.split('/').pop() || 'нет';
+          return `${i + 1}. ${b.rawValue.substring(0, 20)}... → ${imgName}`;
+        });
+        resultsEl.innerHTML = `<strong>Найдено: ${barcodes.length}</strong><br>${items.join('<br>')}`;
       } else {
         clearOverlay();
         resultsEl.textContent = 'Коды не найдены.';
       }
     } catch (e) {
       console.error(e);
-      statusEl.textContent = 'Ошибка детектора: ' + e.message;
     }
 
     if (running) requestAnimationFrame(loop);
