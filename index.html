@@ -2,40 +2,52 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Handwritten Symbols AR Overlay</title>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <title>Multi QR AR Overlay - Images</title>
   <style>
     body { margin: 0; font-family: sans-serif; background: #111; color: #fff; }
     #wrap { position: relative; max-width: 100vw; max-height: 100vh; overflow: hidden; }
-    video { width: 100vw; height: auto; display: block; }
+    video {
+      width: 100vw;
+      height: auto;
+      display: block;
+    }
     #overlay {
-      position: absolute; top: 0; left: 0;
+      position: absolute;
+      top: 0; left: 0;
       width: 100%; height: 100%;
       pointer-events: none;
     }
-    .symbol-box {
+    .box {
       position: absolute;
       border: 2px solid #0f0;
-      box-shadow: 0 0 15px #0f0;
-      background: rgba(0,255,0,0.1);
+      box-shadow: 0 0 10px #0f0;
     }
     .image-overlay {
       position: absolute;
       border: 2px solid #0f0;
       box-shadow: 0 0 15px #0f0;
       overflow: hidden;
+      /* ТОЧНО по центру QR, без сдвига */
       transform: translate(-50%, -50%);
     }
     .image-overlay img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     #list {
-      padding: 8px; font-size: 14px;
+      padding: 8px;
+      font-size: 14px;
       background: rgba(0,0,0,0.8);
-      max-height: 200px; overflow-y: auto;
+      max-height: 200px;
+      overflow-y: auto;
     }
-    button { margin: 4px; padding: 6px 10px; font-size: 14px; }
     #status { font-size: 12px; opacity: 0.7; }
+    button {
+      margin: 4px;
+      padding: 6px 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -45,9 +57,9 @@
 </div>
 
 <div id="list">
-  <div id="status">Загрузка Tesseract.js…</div>
+  <div id="status">Загрузка картинок…</div>
   <div id="results"></div>
-  <button id="startBtn">Старт</button>
+  <button id="startBtn">Старт222</button>
   <button id="stopBtn" disabled>Стоп</button>
 </div>
 
@@ -61,43 +73,65 @@
 
   let stream = null;
   let running = false;
-  let worker = null;
-  let images = {}; // твои картинки car.png и т.д.
+  let detector = null;
+  let images = {};
 
-  // Символ → картинка (нарисуй ★1, A1, B2 и т.д.)
-  const symbolMap = {
-    '★1': 'car.png',
-    '★2': 'home1.png',
-    '★3': 'phot.png',
-    '★4': 'red.jpg',
-    '★5': 'tuf.jpg',
-    '★6': 'win.jpg',
-    'a1': 'car.png',
-    'b2': 'home1.png'
+  const imageFiles = {
+    'car': 'car.png',
+    'home': 'home1.png', 
+    'phot': 'phot.png',
+    'red': 'red.jpg',
+    'tuf': 'tuf.jpg',
+    'win': 'win.jpg'
   };
 
-  // Предзагружаем картинки
   async function preloadImages() {
-    for (const [symbol, filename] of Object.entries(symbolMap)) {
-      const img = new Image();
-      img.src = filename;
-      await new Promise(resolve => {
-        img.onload = () => { images[symbol] = img; resolve(); };
-        img.onerror = resolve;
-      });
+    statusEl.textContent = 'Предзагрузка картинок…';
+    for (const [key, filename] of Object.entries(imageFiles)) {
+      try {
+        const img = new Image();
+        img.src = filename;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => {
+            console.warn(`Не удалось загрузить ${filename}`);
+            resolve();
+          };
+        });
+        images[key] = img;
+      } catch (e) {
+        console.error(`Ошибка загрузки ${filename}:`, e);
+      }
     }
+    statusEl.textContent = `${Object.keys(images).length}/6 картинок загружено. Жми Старт.`;
   }
 
-  async function initTesseract() {
-    statusEl.textContent = 'Инициализация Tesseract.js…';
-    worker = await Tesseract.createWorker('eng', 1, {
-      logger: m => statusEl.textContent = `Tesseract: ${m.status} ${Math.round(m.progress * 100)}%`
-    });
+  function getImageForQR(rawValue) {
+    const prefix = rawValue.substring(0, 6).toLowerCase();
+    for (const [key, img] of Object.entries(images)) {
+      if (prefix.startsWith(key)) {
+        return img;
+      }
+    }
+    return null;
+  }
+
+  async function initDetector() {
+    if ('BarcodeDetector' in window) {
+      const formats = await BarcodeDetector.getSupportedFormats();
+      detector = new BarcodeDetector({ formats: formats.includes('qr_code') ? ['qr_code'] : formats });
+    } else {
+      statusEl.textContent = 'BarcodeDetector не поддерживается.';
+      return;
+    }
     await preloadImages();
-    statusEl.textContent = 'Готово! Нарисуй ★1, ★2, A1, B2 фломастером на коробках.';
   }
 
   async function start() {
+    if (!detector) {
+      alert('BarcodeDetector недоступен.');
+      return;
+    }
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
@@ -106,9 +140,10 @@
       running = true;
       startBtn.disabled = true;
       stopBtn.disabled = false;
-      statusEl.textContent = 'Сканирование символов…';
+      statusEl.textContent = 'Сканирование… QR: car/home/phot/red/tuf/win';
       requestAnimationFrame(loop);
     } catch (e) {
+      console.error(e);
       statusEl.textContent = 'Ошибка камеры: ' + e.message;
     }
   }
@@ -117,7 +152,10 @@
     running = false;
     startBtn.disabled = false;
     stopBtn.disabled = true;
-    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
     video.srcObject = null;
     clearOverlay();
   }
@@ -126,36 +164,47 @@
     overlay.innerHTML = '';
   }
 
-  function drawSymbolOverlay(symbol, x, y, width, height) {
+  function drawOverlay(barcodes) {
     clearOverlay();
     const rect = video.getBoundingClientRect();
     const scaleX = rect.width / video.videoWidth;
     const scaleY = rect.height / video.videoHeight;
 
-    // Рамка вокруг символа
-    const box = document.createElement('div');
-    box.className = 'symbol-box';
-    box.style.left = (x * scaleX) + 'px';
-    box.style.top = (y * scaleY) + 'px';
-    box.style.width = (width * scaleX) + 'px';
-    box.style.height = (height * scaleY) + 'px';
-    box.textContent = symbol;
-    overlay.appendChild(box);
+    barcodes.forEach(code => {
+      const { x, y, width, height } = code.boundingBox;
+      const rawValue = code.rawValue;
 
-    // Картинка вместо символа
-    if (images[symbol]) {
-      const imageDiv = document.createElement('div');
-      imageDiv.className = 'image-overlay';
-      imageDiv.style.width = (width * 1.5 * scaleX) + 'px';
-      imageDiv.style.height = (height * 1.5 * scaleY) + 'px';
-      imageDiv.style.left = ((x + width / 2) * scaleX) + 'px';
-      imageDiv.style.top = ((y + height / 2) * scaleY) + 'px';
-      
-      const img = document.createElement('img');
-      img.src = images[symbol].src;
-      imageDiv.appendChild(img);
-      overlay.appendChild(imageDiv);
-    }
+      // Рамка QR (остаётся для навигации)
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.style.left = (x * scaleX) + 'px';
+      box.style.top = (y * scaleY) + 'px';
+      box.style.width = (width * scaleX) + 'px';
+      box.style.height = (height * scaleY) + 'px';
+      overlay.appendChild(box);
+
+      // Картинка ТОЧНО вместо QR
+      const imgElement = getImageForQR(rawValue);
+      if (imgElement) {
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'image-overlay';
+        
+        // РАЗМЕР ТОЧНО как у QR
+        imageDiv.style.width = (width * scaleX) + 'px';
+        imageDiv.style.height = (height * scaleY) + 'px';
+        
+        // ПОЗИЦИЯ ТОЧНО центр QR
+        const centerX = (x + width / 2) * scaleX;
+        const centerY = (y + height / 2) * scaleY;
+        imageDiv.style.left = centerX + 'px';
+        imageDiv.style.top = centerY + 'px';
+        
+        const img = document.createElement('img');
+        img.src = imgElement.src;
+        imageDiv.appendChild(img);
+        overlay.appendChild(imageDiv);
+      }
+    });
   }
 
   async function loop() {
@@ -171,31 +220,20 @@
     ctx.drawImage(video, 0, 0);
 
     try {
-      // Tesseract.js на весь кадр (можно оптимизировать по ROI)
-      const { data: { text, words } } = await worker.recognize(canvas);
-      
-      if (words.length > 0) {
-        // Берём самый уверенный символ
-        const bestWord = words.reduce((best, word) => 
-          word.confidence > best.confidence ? word : best
-        );
-        
-        const symbol = bestWord.text.trim().toLowerCase();
-        if (symbolMap[symbol]) {
-          drawSymbolOverlay(symbol, 
-            bestWord.bbox.x0, bestWord.bbox.y0, 
-            bestWord.bbox.x1 - bestWord.bbox.x0, 
-            bestWord.bbox.y1 - bestWord.bbox.y0
-          );
-          resultsEl.innerHTML = `<strong>★ ${symbol} → ${symbolMap[symbol]}</strong>`;
-          return;
-        }
+      const barcodes = await detector.detect(canvas);
+      if (barcodes.length > 0) {
+        drawOverlay(barcodes);
+        const items = barcodes.map((b, i) => {
+          const imgName = getImageForQR(b.rawValue)?.src.split('/').pop() || 'нет';
+          return `${i + 1}. ${b.rawValue.substring(0, 20)}... → ${imgName}`;
+        });
+        resultsEl.innerHTML = `<strong>Найдено: ${barcodes.length}</strong><br>${items.join('<br>')}`;
+      } else {
+        clearOverlay();
+        resultsEl.textContent = 'Коды не найдены.';
       }
-      
-      clearOverlay();
-      resultsEl.textContent = 'Символы не найдены. Попробуй ★1, A1, B2…';
     } catch (e) {
-      console.error('Tesseract error:', e);
+      console.error(e);
     }
 
     if (running) requestAnimationFrame(loop);
@@ -204,7 +242,8 @@
   startBtn.addEventListener('click', start);
   stopBtn.addEventListener('click', stop);
 
-  initTesseract();
+  initDetector();
 </script>
 </body>
 </html>
+
